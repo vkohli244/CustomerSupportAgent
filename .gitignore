@@ -1,0 +1,18 @@
+# Python virtual environment
+myenv/
+
+# Local settings and credentials
+local_settings.py
+
+# Utility scripts and mock data
+mock_database.json
+populate_db.py
+
+# Byte-compiled Python files
+__pycache__/
+*.pyc
+
+# Operating system and editor files
+.DS_Store
+.vscode/
+.mypy_cache/
