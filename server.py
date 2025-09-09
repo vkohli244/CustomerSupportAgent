@@ -1,6 +1,9 @@
 from fastapi import FastAPI, HTTPException
 from database import SessionLocal, Order
-from schemas import OrderResponse
+from schemas import OrderResponse, StatusResponse
+import random
+
+statusList:list[str] = ["In transit", "Delivered", "Delayed","Pending"]
 
 app = FastAPI()
 
@@ -19,11 +22,12 @@ def get_order_details(order_id: str):
       return order
     finally:
        db.close()
-      
 
-    # Your function logic here
-    # so inside this function I have to load and store mock_db.json, retrieve the correct order_id and then return it
-    return {"message": f"Fetching details for order {order_id}"}
+@app.get('/shipping_status', response_model=StatusResponse)
+def get_shipping_status(tracking_number: str):
+    status = random.choice(statusList)
+    return {"shipping_status":status}
+
 
 '''
 Notes: 
