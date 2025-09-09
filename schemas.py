@@ -9,3 +9,5 @@ class OrderResponse(BaseModel):
     tracking_number: str
     shipping_status: str
 
+class StatusResponse(BaseModel):
+    shipping_status: str
