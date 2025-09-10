@@ -27,6 +27,8 @@ def get_order_details(order_id: str):
 def get_shipping_status(tracking_number: str):
     status = random.choice(statusList)
     return {"shipping_status":status}
+# return randoming shipping status to simulate a different shipping API that keeps track of status using tracking number 
+
 
 
 '''
