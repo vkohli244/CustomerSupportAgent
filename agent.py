@@ -1,13 +1,16 @@
 import ollama
 import json
 
-from langchain_community.llms import Ollama
+from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.tools import tool
 from langchain.agents import create_tool_calling_agent
 from langchain.agents import AgentExecutor
 from langchain_core.tools import Tool
 from tools import get_order_details, get_shipping_status
+
+llm = ChatOllama(model="qwen2:7b")
+
 
 
 getOrderDetails: Tool = Tool(
@@ -22,20 +25,12 @@ getShippingStatus: Tool = Tool(
 
 toolbox:list[Tool] = [getOrderDetails,getShippingStatus]
 
+llm_with_tools = llm.bind_tools(toolbox)
 system_message = (
     "You are an expert customer support agent. You have access to tools to help "
     "customers with their orders. Your goal is to be helpful and provide "
     "accurate information. Use your tools to look up order details and "
     "shipping status to solve the customer's issue."
-)
-
-# Create the ChatPromptTemplate object
-prompt = ChatPromptTemplate.from_messages(
-    [
-        ("system", system_message),
-        ("human", "{input}"),
-        MessagesPlaceholder(variable_name="agent_scratchpad"),
-    ]
 )
 
 customer_complaint = """
@@ -53,16 +48,29 @@ Thank you,
 John Smith
 """
 
-# Define the system prompt to instruct the LLM
-system_prompt = """
-You are an expert email parsing agent. Your task is to extract the following
-entities from the user's email: customer_name, customer_email, order_id,
-and the core issue.
+# Create the ChatPromptTemplate object
+prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", system_message),
+        ("human", "{input}"),
+        MessagesPlaceholder(variable_name="agent_scratchpad"),
+    ]
+)
 
-Respond with a valid JSON object containing these fields.
-"""
+agent = create_tool_calling_agent(llm_with_tools,toolbox,prompt)
+
+
+agent_executor = AgentExecutor(agent=agent, tools=toolbox, verbose=True)
+
+response = agent_executor.invoke({"input": customer_complaint})
+print(response["output"])
+# Define the system prompt to instruct the LLM
+#system_prompt = """
 
 # Call the chat method with a list of messages
+'''
+
+
 try:
     response = ollama.chat(
         model='llama3:8b-instruct-q4_0',
@@ -83,3 +91,4 @@ except Exception as e:
     print(f"An error occurred: {e}")
 
 
+'''
