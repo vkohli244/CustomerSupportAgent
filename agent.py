@@ -1,6 +1,43 @@
 import ollama
 import json
 
+from langchain_community.llms import Ollama
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.tools import tool
+from langchain.agents import create_tool_calling_agent
+from langchain.agents import AgentExecutor
+from langchain_core.tools import Tool
+from tools import get_order_details, get_shipping_status
+
+
+getOrderDetails: Tool = Tool(
+                            name="getOrderDetails", 
+                            func=get_order_details,
+                            description="Use this tool to get the details of an order, the input must be the order number")
+
+getShippingStatus: Tool = Tool(
+                            name="getShippingStatus", 
+                            func=get_shipping_status,
+                            description="Use this tool to get the shipping status of an order, the input must be a tracking number")
+
+toolbox:list[Tool] = [getOrderDetails,getShippingStatus]
+
+system_message = (
+    "You are an expert customer support agent. You have access to tools to help "
+    "customers with their orders. Your goal is to be helpful and provide "
+    "accurate information. Use your tools to look up order details and "
+    "shipping status to solve the customer's issue."
+)
+
+# Create the ChatPromptTemplate object
+prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", system_message),
+        ("human", "{input}"),
+        MessagesPlaceholder(variable_name="agent_scratchpad"),
+    ]
+)
+
 customer_complaint = """
 Subject: Issue with my recent order, ORD1002
 
@@ -44,3 +81,5 @@ try:
 
 except Exception as e:
     print(f"An error occurred: {e}")
+
+
